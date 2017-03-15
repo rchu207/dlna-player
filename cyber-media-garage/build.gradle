@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('cyber-media-garage-debug.aar'))
