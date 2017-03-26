@@ -1,13 +1,18 @@
 package tw.idv.rchu.dlnaplayer;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -24,9 +29,11 @@ import java.io.IOException;
 import fi.iki.elonen.SimpleWebServer;
 import tw.idv.rchu.dlnaplayer.upnp.Upnp;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener,
+        FileFragment.OnListFragmentInteractionListener {
     private static final String TAG = "[DLNA]Main";
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
     private SimpleWebServer mServer;
     private String mHost;
@@ -56,6 +63,11 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        Fragment fragment = FileFragment.newInstance(1);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.media_fragment, fragment, FileFragment.TAG);
+        transaction.commit();
 
         startWebService();
         Upnp.getInstance().init();
@@ -124,11 +136,37 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Request run-time permissions.
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            onListFragmentInteraction(FileContent.ITEM);
+        } else {
+            // Don't show explanation, request the permission directly.
+            Log.d(TAG, "Request WRITE_EXTERNAL_STORAGE permission.");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         stopWebService();
         Upnp.getInstance().destroy();
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            onListFragmentInteraction(FileContent.ITEM);
+        }
     }
 
     public void startWebService() {
@@ -165,6 +203,21 @@ public class MainActivity extends AppCompatActivity
         if (mServer != null) {
             mServer.stop();
             mServer = null;
+        }
+    }
+
+    @Override
+    public void onListFragmentInteraction(FileContent.FileItem item) {
+        if (item.content.getAuthority().equals(FileContent.AUTHORITY_FILE)) {
+            // Open file in the MediaController fragment.
+            File file = new File(item.content.getPath());
+            Fragment fragment = MediaControllerFragment.newInstance(mHost, mPort, file);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.media_fragment, fragment, MediaControllerFragment.TAG);
+            transaction.commit();
+        } else {
+            FileFragment fileFragment = (FileFragment) getSupportFragmentManager().findFragmentByTag(FileFragment.TAG);
+            fileFragment.setRoot(item);
         }
     }
 }
