@@ -1,6 +1,7 @@
 package tw.idv.rchu.dlnaplayer;
 
 import android.net.Uri;
+import android.provider.MediaStore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +22,25 @@ public class FileContent {
     public static final String AUTHORITY_VIDEO_BUCKET = "video-bucket";
     public static final String AUTHORITY_IMAGE = "image";
     public static final String AUTHORITY_IMAGE_BUCKET = "image-bucket";
+    public static final String AUTHORITY_AUDIO = "audio";
+    public static final String AUTHORITY_AUDIO_ALBUM = "audio-album";
     public static final String AUTHORITY_LOCAL_STORAGE = "local-storage";
     public static final String AUTHORITY_FOLDER = "folder";
     public static final String AUTHORITY_FILE = "file";
+
+    public static final String[] PROJECTION_AUDIO_ALBUM = {
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM,
+    };
+
+    public static final String[] PROJECTION_AUDIO = {
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.DISPLAY_NAME,
+            MediaStore.Audio.Media.MIME_TYPE,
+            MediaStore.Audio.Media.ALBUM_ID,
+    };
 
     public static final FileItem ITEM = new FileItem("0",
             SCHEME + "://" + AUTHORITY_ROOT);
@@ -39,6 +56,7 @@ public class FileContent {
         int id = 0;
         addItem(new FileItem(String.valueOf(id++), SCHEME + "://" + AUTHORITY_VIDEO, "Video"));
         addItem(new FileItem(String.valueOf(id++), SCHEME + "://" + AUTHORITY_IMAGE, "Image"));
+        addItem(new FileItem(String.valueOf(id++), SCHEME + "://" + AUTHORITY_AUDIO, "Audio"));
         addItem(new FileItem(String.valueOf(id++), SCHEME + "://" + AUTHORITY_LOCAL_STORAGE, "Local Storage"));
     }
 

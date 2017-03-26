@@ -32,6 +32,7 @@ public class FileFragment extends Fragment {
 
     private static final ArrayList<String> mVideoExtensions = new ArrayList<>(16);
     private static final ArrayList<String> mImageExtensions = new ArrayList<>(16);
+    private static final ArrayList<String> mAudioExtensions = new ArrayList<>(16);
 
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
@@ -73,6 +74,13 @@ public class FileFragment extends Fragment {
         mImageExtensions.add("jpg");
         mImageExtensions.add("png");
         mImageExtensions.add("webp");
+
+        mAudioExtensions.add("m4a");
+        mAudioExtensions.add("aac");
+        mAudioExtensions.add("flac");
+        mAudioExtensions.add("mp3");
+        mAudioExtensions.add("wav");
+        mAudioExtensions.add("ogg");
     }
 
     @Override
@@ -125,7 +133,8 @@ public class FileFragment extends Fragment {
             } else {
                 String fileExtension = getFileExtension(pathName.getName());
                 return mVideoExtensions.contains(fileExtension) ||
-                        mImageExtensions.contains(fileExtension);
+                        mImageExtensions.contains(fileExtension) ||
+                        mAudioExtensions.contains(fileExtension);
             }
         }
     };
@@ -212,6 +221,10 @@ public class FileFragment extends Fragment {
                             items.add(new FileContent.FileItem(String.valueOf(id++),
                                     FileContent.SCHEME + "://" + FileContent.AUTHORITY_FILE + file.getAbsolutePath(),
                                     file.getName(), "image/*"));
+                        } else if (mAudioExtensions.contains(extension)) {
+                            items.add(new FileContent.FileItem(String.valueOf(id++),
+                                    FileContent.SCHEME + "://" + FileContent.AUTHORITY_FILE + file.getAbsolutePath(),
+                                    file.getName(), "audio/*"));
                         }
                     }
                 }
@@ -235,7 +248,7 @@ public class FileFragment extends Fragment {
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI, PROJECTION_IMAGE_BUCKET);
                 authority = FileContent.AUTHORITY_IMAGE_BUCKET;
             } else if (root.content.getAuthority().equals(FileContent.AUTHORITY_IMAGE_BUCKET)) {
-                // Query all images in he bucket from MediaStore.
+                // Query all images in the bucket from MediaStore.
                 String selection = MediaStore.Images.Media.BUCKET_ID + " = ?";
                 String[] selectionArgs = new String[] {
                         root.id
@@ -244,6 +257,29 @@ public class FileFragment extends Fragment {
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI, PROJECTION_IMAGE,
                         selection, selectionArgs,
                         MediaStore.Images.Media.DEFAULT_SORT_ORDER);
+                authority = FileContent.AUTHORITY_FILE;
+            } else if (root.content.getAuthority().equals(FileContent.AUTHORITY_AUDIO)) {
+                // Query all audio albums from MediaStore.
+                String selection = MediaStore.Audio.Media.IS_MUSIC + " = 1";
+                cursor = getActivity().getContentResolver().query(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        FileContent.PROJECTION_AUDIO_ALBUM,
+                        selection,
+                        null,
+                        null);
+                authority = FileContent.AUTHORITY_AUDIO_ALBUM;
+            } else if (root.content.getAuthority().equals(FileContent.AUTHORITY_AUDIO_ALBUM)) {
+                // Query all audios in the album from MediaStore.
+                String selection = MediaStore.Audio.Media.ALBUM_ID + " = ?";
+                String[] selectionArgs = new String[] {
+                        root.id
+                };
+                cursor = getActivity().getContentResolver().query(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        FileContent.PROJECTION_AUDIO,
+                        selection,
+                        selectionArgs,
+                        null);
                 authority = FileContent.AUTHORITY_FILE;
             }
 

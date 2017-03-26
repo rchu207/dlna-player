@@ -39,6 +39,8 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
             holder.mIconView.setImageResource(R.drawable.ic_movie_black_36dp);
         } else if (mValues.get(position).type.startsWith("image/")) {
             holder.mIconView.setImageResource(R.drawable.ic_photo_black_36dp);
+        } else if (mValues.get(position).type.startsWith("audio/")) {
+            holder.mIconView.setImageResource(R.drawable.ic_audiotrack_black_36dp);
         } else {
             holder.mIconView.setImageResource(R.drawable.ic_folder_black_36dp);
         }
