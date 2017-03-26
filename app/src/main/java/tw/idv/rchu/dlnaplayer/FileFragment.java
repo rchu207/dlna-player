@@ -300,6 +300,10 @@ public class FileFragment extends Fragment {
                     }
                 } while (cursor.moveToNext());
             }
+
+            if (cursor != null) {
+                cursor.close();
+            }
         }
 
         mRecyclerView.setAdapter(new MyFileRecyclerViewAdapter(items, mListener));
