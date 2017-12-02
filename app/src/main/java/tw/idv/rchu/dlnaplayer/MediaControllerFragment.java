@@ -4,7 +4,11 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -345,7 +349,10 @@ public class MediaControllerFragment extends Fragment implements
 
         mUpnp.setListener(mListener);
 
-        startCapture();
+        DmrSelectionFragment dialog = new DmrSelectionFragment();
+        dialog.show(getFragmentManager(), DmrSelectionFragment.TAG);
+
+//        startCapture();
     }
 
     @Override
